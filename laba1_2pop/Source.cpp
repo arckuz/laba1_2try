@@ -74,7 +74,7 @@ int64_t ost_with_numb(int64_t Y, int64_t k, int64_t M, int64_t p) {
 int64_t gen_prost() {
     random_device rd;
     ranlux24_base gen(rd());
-    uniform_int_distribution<> dist(10000, 400000);
+    uniform_int_distribution<> dist(10000, 40000);
     while (true) {
         int64_t p = dist(gen);
         int64_t i;

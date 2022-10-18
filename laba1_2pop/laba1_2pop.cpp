@@ -198,6 +198,7 @@ private:
     int64_t k;
     int64_t x;
 };
+
 void shamir(string str) {
     SHAMIR sh_Alice;
     SHAMIR sh_Bob;
@@ -309,12 +310,37 @@ void eg(string str) {
     }
     cout << "\nРасшифрованное сообщение: " << str_dec;
 }
+
 int main()
 {
+    int num;
     SetConsoleCP(1251);
     SetConsoleOutputCP(1251);
+    cout << "Выберите что хотите сделать: ";
+    cout << "\n1.Шамир";
+    cout << "\n2.RSA";
+    cout << "\n3.Диффи-Хеллман";
+    cout << "\n4.Эль-Гамаль" << endl;
+    cin >> num;
+    cin.get();
     string str;
     cout << "Введите сообщение для шифровки: ";
     getline(cin, str);
-    eg(str);
+    switch (num)
+    {
+    case 1:
+        shamir(str);
+        break;
+    case 2:
+        rsa(str);
+        break;
+    case 3:
+        dh(str);
+        break;
+    case 4:
+        eg(str);
+        break;
+    default:
+        break;
+    }
 }
