@@ -4,7 +4,6 @@ public:
 	int64_t p;
     int64_t m;
 
-
     void gen_p() {
         p = gen_prost();
     }
@@ -71,6 +70,57 @@ private:
 
 };
 
+class SHAMIR2 {
+public:
+    int64_t p;
+    int64_t m;
+
+    void gen_p() {
+        p = gen_prost();
+    }
+
+    void a_calc() {
+        a = vzaim_prost(p - 1);
+    }
+
+    void a_obr_calc() {
+        a_obr = obrat(a, p - 1);
+    }
+
+    void x1_calc() {
+        x1 = ost(m, ca, p);
+    }
+
+    int64_t get_x1() {
+        return x1;
+    }
+    int64_t get_x2() {
+        return x2;
+    }
+    int64_t get_x3() {
+        return x3;
+    }
+    int64_t get_x4() {
+        return x4;
+    }
+
+    void set_x1(int64_t t) {
+        x1 = t;
+    }
+    void set_x2(int64_t t) {
+        x2 = t;
+    }
+    void set_x3(int64_t t) {
+        x3 = t;
+    }
+
+private:
+    int64_t a;
+    int64_t a_obr;
+    int64_t x1;
+
+};
+
 class RSA {
 public:
     int64_t m;
@@ -116,8 +166,7 @@ class DH {
 public:
     int64_t p;
     int64_t g;
-    int64_t A;
-    int64_t B;
+    int64_t open_key;
 
     void gen_p() {
         p = gen_prost();
@@ -125,37 +174,21 @@ public:
     void gen_g() {
         g = gen_numb(p);
     }
-    void gen_a() {
-        a = gen_numb(p);
+    void gen_open_key() {
+        open_key = gen_numb(p);
     }
-    void gen_b() {
-        b = gen_numb(p);
+    void calc_secret_key() {
+        secret_key = ost(g, open_key, p);
     }
-    
-    void calc_A() {
-        A = ost(g, a, p);
+    void calc_key(int64_t SecretKeyFromU) {
+        key = ost(SecretKeyFromU, open_key, p);
     }
-    void calc_B() {
-        B = ost(g, b, p);
-    }
-    void calc_k_a() {
-        k_a = ost(B, a, p);
-    }
-    void calc_k_b() {
-        k_b = ost(A, b, p);
-    }
-
-    int64_t get_k_a() {
-        return k_a;
-    }
-    int64_t get_k_b() {
-        return k_b;
+    int64_t get_key() {
+        return key;
     }
 private:
-    int64_t a;
-    int64_t b;
-    int64_t k_a;
-    int64_t k_b;
+    int64_t secret_key;
+    int64_t key;
 
 };
 
@@ -173,7 +206,7 @@ public:
         p = gen_prost();
     }
     void gen_g() {
-        g = gen_numb(p);
+        g = vzaim_prost(p);
     }
     void gen_x() {
         x = gen_numb(p);
@@ -253,33 +286,29 @@ void dh(string str) {
     DH dh_Alice;
     DH dh_Bob;
     string str_enc = "";
+
     dh_Alice.gen_p();
     dh_Alice.gen_g();
-    dh_Alice.gen_a();
+    dh_Alice.gen_open_key();
 
     dh_Bob.p = dh_Alice.p;
     dh_Bob.g = dh_Alice.g;
-    dh_Bob.gen_b();
+    dh_Bob.gen_open_key();
+    dh_Bob.calc_secret_key();
 
-    dh_Alice.calc_A();
-    dh_Bob.calc_B();
+    dh_Alice.calc_key(dh_Bob.open_key);
+    dh_Bob.calc_key(dh_Alice.open_key);
 
-    dh_Alice.B = dh_Bob.B;
-    dh_Bob.A = dh_Alice.A;
-
-    dh_Alice.calc_k_a();
-    dh_Bob.calc_k_b();
     cout << "Зашифрованное сообщение: ";
     for (auto i : str) {
-        str_enc += char(int(i) + dh_Alice.get_k_a() % 10);
-        cout << char(int(i) + dh_Alice.get_k_a()%10);
+        str_enc += char(int(i) + dh_Alice.get_key() % 10);
+        cout << char(int(i) + dh_Alice.get_key() % 10);
     }
     cout << "\nРасшифрованное сообщение: ";
     for (auto i : str_enc) {
-        cout << char(int(i) - dh_Bob.get_k_b() % 10);
+        cout << char(int(i) - dh_Bob.get_key() % 10);
     }
 }
-
 void eg(string str) {
 
     EG eg_Alice;
