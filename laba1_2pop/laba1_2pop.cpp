@@ -19,12 +19,12 @@ public:
         a_obr = obrat(a, p - 1);
     }
 
-    void x1_calc(int64_t inc) {
-        x1 = ost(inc, a, p);
+    void x1_calc(int64_t inc_m) {
+        x1 = ost(inc_m, a, p);
     }
 
-    void x2_calc(int64_t inc) {
-        x2 = ost(inc, a_obr, p);
+    void x2_calc(int64_t inc_x) {
+        x2 = ost(inc_x, a_obr, p);
     }
 
 private:
@@ -84,14 +84,14 @@ public:
     void gen_g() {
         g = gen_numb(p);
     }
-    void gen_open_key() {
-        open_key = gen_numb(p);
+    void gen_secret_key() {
+        secret_key = gen_numb(p);
     }
-    void calc_secret_key() {
-        secret_key = ost(g, open_key, p);
+    void calc_open_key() {
+        open_key = ost(g, secret_key, p);
     }
-    void calc_key(int64_t SecretKeyFromU) {
-        key = ost(SecretKeyFromU, open_key, p);
+    void calc_key(int64_t OpenKeyFromU) {
+        key = ost(OpenKeyFromU, secret_key, p);
     }
     int64_t get_key() {
         return key;
@@ -192,12 +192,13 @@ void dh(string str) {
 
     dh_Alice.gen_p();
     dh_Alice.gen_g();
-    dh_Alice.gen_open_key();
+    dh_Alice.gen_secret_key();
+    dh_Alice.calc_open_key();
 
     dh_Bob.p = dh_Alice.p;
     dh_Bob.g = dh_Alice.g;
-    dh_Bob.gen_open_key();
-    dh_Bob.calc_secret_key();
+    dh_Bob.gen_secret_key();
+    dh_Bob.calc_open_key();
 
     dh_Alice.calc_key(dh_Bob.open_key);
     dh_Bob.calc_key(dh_Alice.open_key);
