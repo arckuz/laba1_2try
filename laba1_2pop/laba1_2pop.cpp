@@ -3,7 +3,6 @@
 class SHAMIR {
 public:
     int64_t p;
-    int64_t m;
     int64_t x1;
     int64_t x2;
 
