@@ -1,79 +1,11 @@
 ﻿#include "Header.h"
+
 class SHAMIR {
-public:
-	int64_t p;
-    int64_t m;
-
-    void gen_p() {
-        p = gen_prost();
-    }
-
-    void ca_calc() {
-        ca = vzaim_prost(p - 1);
-    }
-    void cb_calc() {
-        cb = vzaim_prost(p - 1);
-    }
-
-    void da_calc() {
-        da = obrat(ca, p - 1);
-    }
-    void db_calc() {
-        db = obrat(cb, p - 1);
-    }
-
-    void x1_calc() {
-        x1 = ost(m, ca, p);
-    }
-    void x2_calc() {
-        x2 = ost(x1, cb, p);
-    }
-    void x3_calc() {
-        x3 = ost(x2, da, p);
-    }
-    void x4_calc() {
-        x4 = ost(x3, db, p);
-    }
-
-    int64_t get_x1() {
-        return x1;
-    }
-    int64_t get_x2() {
-        return x2;
-    }
-    int64_t get_x3() {
-        return x3;
-    }
-    int64_t get_x4() {
-        return x4;
-    }
-
-    void set_x1(int64_t t){
-        x1 = t;
-    }
-    void set_x2(int64_t t) {
-        x2 = t;
-    }
-    void set_x3(int64_t t) {
-        x3 = t;
-    }
-
-private:
-    int64_t ca;
-    int64_t da;
-    int64_t cb;
-    int64_t db;
-    int64_t x1;
-    int64_t x2;
-    int64_t x3;
-    int64_t x4;
-
-};
-
-class SHAMIR2 {
 public:
     int64_t p;
     int64_t m;
+    int64_t x1;
+    int64_t x2;
 
     void gen_p() {
         p = gen_prost();
@@ -87,43 +19,21 @@ public:
         a_obr = obrat(a, p - 1);
     }
 
-    void x1_calc() {
-        x1 = ost(m, ca, p);
+    void x1_calc(int64_t inc) {
+        x1 = ost(inc, a, p);
     }
 
-    int64_t get_x1() {
-        return x1;
-    }
-    int64_t get_x2() {
-        return x2;
-    }
-    int64_t get_x3() {
-        return x3;
-    }
-    int64_t get_x4() {
-        return x4;
-    }
-
-    void set_x1(int64_t t) {
-        x1 = t;
-    }
-    void set_x2(int64_t t) {
-        x2 = t;
-    }
-    void set_x3(int64_t t) {
-        x3 = t;
+    void x2_calc(int64_t inc) {
+        x2 = ost(inc, a_obr, p);
     }
 
 private:
     int64_t a;
     int64_t a_obr;
-    int64_t x1;
-
 };
 
 class RSA {
 public:
-    int64_t m;
     int64_t n;
     int64_t e;
     int64_t c;
@@ -146,10 +56,10 @@ public:
     void calc_d() {
         d = obrat(e, f);
     }
-    void calc_c() {
-        c = ost(m, e, n);
+    void calc_c(int m_inc, int e_inc, int n_inc) {
+        c = ost(m_inc, e_inc, n_inc);
     }
-    int64_t calc_dec_m() {
+    int64_t calc_dec_m(int64_t c) {
         dec_m = ost(c, d, n);
         return dec_m;
     }
@@ -194,7 +104,6 @@ private:
 
 class EG {
 public:
-    int64_t m;
     int64_t m_dec;
     int64_t p;
     int64_t g;
@@ -211,20 +120,20 @@ public:
     void gen_x() {
         x = gen_numb(p);
     }
-    void gen_k() {
-        k = vzaim_prost(p-1);
+    void gen_k(int64_t p_inc) {
+        k = vzaim_prost(p_inc-1);
     }
     void calc_Y() {
         Y = ost(g, x, p);
     }
-    void calc_a() {
-        a = ost(g, k, p);
+    void calc_a(int64_t g_inc, int64_t p_inc) {
+        a = ost(g_inc, k, p_inc);
     }
-    void calc_b() {
-        b = ost_with_numb(Y, k, m, p);
+    void calc_b(int m, int64_t Y_inc, int64_t p_inc) {
+        b = ost_with_numb(Y_inc, k, m, p_inc);
     }
-    void calc_m_dec() {
-        m_dec = ost_with_numb(a, p - 1 - x, b, p);
+    void calc_m_dec(int64_t a_inc, int64_t b_inc) {
+        m_dec = ost_with_numb(a_inc, p - 1 - x, b_inc, p);
     }
 
 private:
@@ -235,25 +144,22 @@ private:
 void shamir(string str) {
     SHAMIR sh_Alice;
     SHAMIR sh_Bob;
-    string str_dec="";
+    string str_dec = "";
     sh_Alice.gen_p(); //Алиса выбрала p
     sh_Bob.p = sh_Alice.p; //Алиса передает p бобу
     cout << "Зашифрованное сообщение: ";
     for (auto i : str) {
-        sh_Alice.m = int(i);
-        sh_Alice.ca_calc(); //Алиса считает са
-        sh_Alice.da_calc(); //Алиса считает da
-        sh_Bob.cb_calc(); //Боб считает cb
-        sh_Bob.db_calc(); //Боб считает db
-        sh_Alice.x1_calc();  //Алиса считает x1
-        sh_Bob.set_x1(sh_Alice.get_x1()); //Алиса передает Бобу x1
-        sh_Bob.x2_calc(); //боб считает х2
-        sh_Alice.set_x2(sh_Bob.get_x2()); //Боб передает Алисе х2
-        sh_Alice.x3_calc(); //Алиса считает х3
-        cout << sh_Alice.get_x3()<<" ";
-        sh_Bob.set_x3(sh_Alice.get_x3()); // Алиса передает Бобу x3
-        sh_Bob.x4_calc(); //Боб считает x4
-        str_dec += char(sh_Bob.get_x4());
+        int m = int(i);
+        sh_Alice.a_calc(); //Алиса считает са
+        sh_Alice.a_obr_calc(); //Алиса считает da
+        sh_Bob.a_calc(); //Боб считает cb
+        sh_Bob.a_obr_calc(); //Боб считает db
+        sh_Alice.x1_calc(m);  //Алиса считает x1
+        sh_Bob.x1_calc(sh_Alice.x1); //боб считает х1
+        sh_Alice.x2_calc(sh_Bob.x1); //Алиса считает х2
+        cout << sh_Alice.x2 << " ";
+        sh_Bob.x2_calc(sh_Alice.x2); //Боб считает x2
+        str_dec += char(sh_Bob.x2);
     }
     cout << "\nРасшифрованное сообщение: " << str_dec;
 }
@@ -269,15 +175,12 @@ void rsa(string str) {
     rsa_Alice.calc_f();
     rsa_Alice.calc_e();
     rsa_Alice.calc_d();
-    rsa_Bob.n = rsa_Alice.n;
-    rsa_Bob.e = rsa_Alice.e;
     cout << "Зашифрованное соощение: ";
     for (auto i : str) {
-        rsa_Bob.m = int(i);
-        rsa_Bob.calc_c();
+        int m = int(i);
+        rsa_Bob.calc_c(m, rsa_Alice.e, rsa_Alice.n);
         cout << rsa_Bob.c << " ";
-        rsa_Alice.c = rsa_Bob.c;
-        str_dec += char(rsa_Alice.calc_dec_m());
+        str_dec += char(rsa_Alice.calc_dec_m(rsa_Bob.c));
     }
     cout << "\nРасшифрованное сообщение: " << str_dec;
 }
@@ -309,6 +212,7 @@ void dh(string str) {
         cout << char(int(i) - dh_Bob.get_key() % 10);
     }
 }
+
 void eg(string str) {
 
     EG eg_Alice;
@@ -320,21 +224,15 @@ void eg(string str) {
     eg_Alice.gen_x();
     eg_Alice.calc_Y();
 
-    eg_Bob.p = eg_Alice.p;
-    eg_Bob.g = eg_Alice.g;
-    eg_Bob.Y = eg_Alice.Y;
-
     cout << "Зашифрованное сообщение: ";
     for (auto i : str) {
 
-        eg_Bob.m = int(i);
-        eg_Bob.gen_k();
-        eg_Bob.calc_a();
-        eg_Bob.calc_b();
-        cout << "(" << eg_Bob.a << "," << eg_Bob.b << "), ";
-        eg_Alice.a = eg_Bob.a;
-        eg_Alice.b = eg_Bob.b;        
-        eg_Alice.calc_m_dec();
+        int m = int(i);
+        eg_Bob.gen_k(eg_Alice.p);
+        eg_Bob.calc_a(eg_Alice.g, eg_Alice.p);
+        eg_Bob.calc_b(m, eg_Alice.Y, eg_Alice.p);
+        cout << "(" << eg_Bob.a << "," << eg_Bob.b << "), ";       
+        eg_Alice.calc_m_dec(eg_Bob.a, eg_Bob.b);
         str_dec += char(eg_Alice.m_dec);
     }
     cout << "\nРасшифрованное сообщение: " << str_dec;
